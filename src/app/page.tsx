@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
+import LiveDemo from "./components/LiveDemo";
 
 const FEATURES = [
   {
@@ -64,7 +65,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative">
         <div className="max-w-6xl mx-auto px-4 py-20 sm:px-6 sm:py-28 text-center">
           <div className="inline-block rounded-full bg-accent-light px-3 py-1 text-xs font-semibold text-accent mb-6">
             3 free character sheets — no credit card required
@@ -93,19 +94,9 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Demo image placeholder */}
-          <div className="mt-14 rounded-2xl border border-border bg-card shadow-xl overflow-hidden max-w-4xl mx-auto">
-            <div className="aspect-[16/10] bg-gradient-to-br from-accent-light to-background flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-3">&#x1F43C;</div>
-                <p className="text-sm text-muted">
-                  Your panda character sheet demo image goes here
-                </p>
-                <p className="text-xs text-muted mt-1">
-                  Place your sheet at <code className="bg-accent-light px-1.5 py-0.5 rounded">public/demo/panda-hero-sheet.png</code>
-                </p>
-              </div>
-            </div>
+          {/* Live Demo */}
+          <div className="mt-14">
+            <LiveDemo />
           </div>
         </div>
       </section>

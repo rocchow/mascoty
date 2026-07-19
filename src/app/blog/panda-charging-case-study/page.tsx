@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -35,9 +36,15 @@ export default function PandaChargingCaseStudy() {
         </p>
       </div>
 
-      {/* Hero image placeholder */}
-      <div className="rounded-xl border border-border bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 aspect-[2/1] flex items-center justify-center mb-10">
-        <div className="text-6xl">&#x1F43C;&#x26A1;</div>
+      {/* Character sheet */}
+      <div className="rounded-xl border border-border overflow-hidden mb-10">
+        <Image
+          src="/panda/panda.png"
+          alt="Panda the Charging Hero — full character sheet"
+          width={1400}
+          height={900}
+          className="w-full h-auto"
+        />
       </div>
 
       {/* Content */}
@@ -122,6 +129,28 @@ export default function PandaChargingCaseStudy() {
             placed at venue tables to direct guests to the kiosks.
           </li>
         </ol>
+
+        {/* Marketing materials created from the character sheet */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+          <div className="rounded-xl border border-border overflow-hidden">
+            <Image
+              src="/panda/claim_a_kiosk_EN.png"
+              alt="Panda Charging venue acquisition poster"
+              width={700}
+              height={700}
+              className="w-full h-auto"
+            />
+          </div>
+          <div className="rounded-xl border border-border overflow-hidden">
+            <Image
+              src="/panda/noDeposit_EN.png"
+              alt="Panda Charging no-deposit feature poster"
+              width={700}
+              height={700}
+              className="w-full h-auto"
+            />
+          </div>
+        </div>
 
         <h2 className="text-xl font-bold mt-8 mb-3">The result</h2>
         <p>

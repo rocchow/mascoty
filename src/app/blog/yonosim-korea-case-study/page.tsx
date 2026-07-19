@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -35,9 +36,15 @@ export default function YonoSIMCaseStudy() {
         </p>
       </div>
 
-      {/* Hero image placeholder */}
-      <div className="rounded-xl border border-border bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 aspect-[2/1] flex items-center justify-center mb-10">
-        <div className="text-6xl">&#x1F30F;&#x1F4F1;</div>
+      {/* Character sheet */}
+      <div className="rounded-xl border border-border overflow-hidden mb-10">
+        <Image
+          src="/yoni/yoni.png"
+          alt="Yoni — Travel Signal Spirit character sheet for YonoSIM"
+          width={1400}
+          height={900}
+          className="w-full h-auto"
+        />
       </div>
 
       {/* Content */}
@@ -135,6 +142,17 @@ export default function YonoSIMCaseStudy() {
           <li>Celebrating with a &ldquo;connected!&rdquo; gesture</li>
           <li>Walking through a stylized airport gate</li>
         </ul>
+        <div className="rounded-xl border border-border overflow-hidden mt-4">
+          <video
+            src="/yoni/yoni.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto"
+          />
+        </div>
+
         <p>
           The entire video was generated, edited, and published in <strong>under 4 hours</strong>.
           No animation studio. No motion graphics freelancer. The character sheet provided the
