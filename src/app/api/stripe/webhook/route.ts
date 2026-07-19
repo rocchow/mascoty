@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe/client";
+import { getStripe } from "@/lib/stripe/client";
 import { addCredits } from "@/lib/credits";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CREDIT_PACK } from "@/lib/constants";
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
           session.payment_intent as string
         );
       } else if (session.mode === "subscription") {
-        const subscription = await stripe.subscriptions.retrieve(
+        const subscription = await getStripe().subscriptions.retrieve(
           session.subscription as string
         );
         const priceId = subscription.items.data[0]?.price.id;
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       const invoice = event.data.object as { subscription?: string; customer: string; billing_reason?: string };
       if (!invoice.subscription) break;
 
-      const subscription = await stripe.subscriptions.retrieve(
+      const subscription = await getStripe().subscriptions.retrieve(
         invoice.subscription
       );
       const customerId = invoice.customer;

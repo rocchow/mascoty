@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PRICING_TIERS, CREDIT_PACK } from "@/lib/constants";
 import { useSearchParams } from "next/navigation";
 import { clsx } from "clsx";
 
 export default function CreditsPage() {
+  return (
+    <Suspense>
+      <CreditsContent />
+    </Suspense>
+  );
+}
+
+function CreditsContent() {
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const searchParams = useSearchParams();

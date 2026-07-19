@@ -1,4 +1,4 @@
-import { openai } from "./client";
+import { getOpenAI } from "./client";
 import { buildCharacterSheetPrompt } from "./prompts";
 import { createAdminClient } from "../supabase/admin";
 import { MascotParams } from "@/types/mascot";
@@ -18,7 +18,7 @@ export async function generateMascot(
 
     const prompt = buildCharacterSheetPrompt(params);
 
-    const response = await openai.images.generate({
+    const response = await getOpenAI().images.generate({
       model: "gpt-image-1",
       prompt,
       n: 1,
