@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const posts = [
   {
@@ -8,8 +9,8 @@ const posts = [
       "From a single character sheet to a fully branded kiosk network — how a powerbank rental company created \"Panda the Charging Hero\" and deployed it across every customer touchpoint.",
     date: "July 15, 2026",
     tag: "Case Study",
-    gradient: "from-green-50 to-green-100 dark:from-green-950 dark:to-green-900",
-    emoji: "\u{1F43C}⚡",
+    image: "/panda/panda.png",
+    imageAlt: "Panda the Charging Hero character sheet",
   },
   {
     slug: "yonosim-korea-case-study",
@@ -18,8 +19,8 @@ const posts = [
       "How a travel eSIM brand used Mascoty to generate their mascot \"Yoni,\" produce website content, and create an animated marketing video using Seedance 2.0 — all in a single day.",
     date: "July 18, 2026",
     tag: "Case Study",
-    gradient: "from-red-50 to-red-100 dark:from-red-950 dark:to-red-900",
-    emoji: "\u{1F30F}\u{1F4F1}",
+    image: "/yoni/yoni.png",
+    imageAlt: "Yoni — Travel Signal Spirit character sheet",
   },
 ];
 
@@ -38,10 +39,14 @@ export default function BlogIndexPage() {
             href={`/blog/${post.slug}`}
             className="group block rounded-xl border border-border bg-card overflow-hidden transition hover:border-accent hover:shadow-sm"
           >
-            <div
-              className={`aspect-[3/1] bg-gradient-to-br ${post.gradient} flex items-center justify-center`}
-            >
-              <div className="text-5xl">{post.emoji}</div>
+            <div className="aspect-[3/1] relative overflow-hidden bg-card">
+              <Image
+                src={post.image}
+                alt={post.imageAlt}
+                width={1400}
+                height={900}
+                className="w-full h-full object-cover object-top"
+              />
             </div>
             <div className="p-6">
               <div className="flex items-center gap-3 mb-3">
