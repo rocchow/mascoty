@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
@@ -249,8 +250,14 @@ export default function LandingPage() {
               href="/blog/panda-charging-case-study"
               className="group rounded-xl border border-border bg-background overflow-hidden transition hover:border-accent hover:shadow-sm"
             >
-              <div className="aspect-[2/1] bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 flex items-center justify-center">
-                <div className="text-5xl">&#x1F43C;&#x26A1;</div>
+              <div className="aspect-[2/1] relative overflow-hidden">
+                <Image
+                  src="/panda/panda.png"
+                  alt="Panda the Charging Hero character sheet"
+                  width={1400}
+                  height={900}
+                  className="w-full h-full object-cover object-top"
+                />
               </div>
               <div className="p-5">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-accent mb-2">Case Study</div>
@@ -268,8 +275,14 @@ export default function LandingPage() {
               href="/blog/yonosim-korea-case-study"
               className="group rounded-xl border border-border bg-background overflow-hidden transition hover:border-accent hover:shadow-sm"
             >
-              <div className="aspect-[2/1] bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 flex items-center justify-center">
-                <div className="text-5xl">&#x1F30F;&#x1F4F1;</div>
+              <div className="aspect-[2/1] relative overflow-hidden">
+                <Image
+                  src="/yoni/yoni.png"
+                  alt="Yoni — Travel Signal Spirit character sheet"
+                  width={1400}
+                  height={900}
+                  className="w-full h-full object-cover object-top"
+                />
               </div>
               <div className="p-5">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-accent mb-2">Case Study</div>
