@@ -3,6 +3,8 @@ import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
 import LiveDemo from "./components/LiveDemo";
+import IntentForm from "./components/IntentForm";
+import { PLEDGE_AMOUNT_LABEL, PLEDGE_CREDIT_LABEL } from "@/lib/pledge";
 
 const FEATURES = [
   {
@@ -51,15 +53,12 @@ export default function LandingPage() {
             <a href="#pricing" className="text-muted hover:text-foreground transition">Pricing</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Link href="/auth/login" className="text-sm font-medium text-muted hover:text-foreground transition">
-              Sign in
-            </Link>
-            <Link
-              href="/auth/signup"
+            <a
+              href="#waitlist"
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover"
             >
-              Get Started Free
-            </Link>
+              Join Waitlist
+            </a>
           </div>
         </div>
       </header>
@@ -68,7 +67,7 @@ export default function LandingPage() {
       <section className="relative">
         <div className="max-w-6xl mx-auto px-4 py-20 sm:px-6 sm:py-28 text-center">
           <div className="inline-block rounded-full bg-accent-light px-3 py-1 text-xs font-semibold text-accent mb-6">
-            3 free character sheets — no credit card required
+            Early access — launching soon
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-3xl mx-auto">
             Turn any idea into a{" "}
@@ -79,19 +78,39 @@ export default function LandingPage() {
             Turnaround views, expressions, poses, color palette, style guide —
             all generated in 60 seconds by AI. Production-ready.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/auth/signup"
-              className="rounded-xl bg-accent px-8 py-3.5 text-base font-semibold text-white transition hover:bg-accent-hover shadow-lg shadow-accent/20"
-            >
-              Create Your Mascot — Free
-            </Link>
-            <a
-              href="#how-it-works"
-              className="rounded-xl border border-border px-8 py-3.5 text-base font-medium transition hover:bg-card"
-            >
-              See How It Works
-            </a>
+          <div id="waitlist" className="mt-8 scroll-mt-24">
+            <IntentForm source="hero" buttonLabel="Get Early Access" />
+            <p className="mt-3 text-xs text-muted">
+              Be first in line. No spam, unsubscribe anytime.
+            </p>
+
+            <div className="mt-6 max-w-md mx-auto rounded-xl border border-dashed border-accent/40 bg-accent-light/40 p-4 text-left">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl leading-none">&#x1F91D;</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-foreground">
+                    Or back us with {PLEDGE_AMOUNT_LABEL}
+                  </div>
+                  <p className="text-xs text-muted mt-0.5 leading-relaxed">
+                    Get {PLEDGE_CREDIT_LABEL} of launch credit + priority
+                    access. We&apos;re still building — your $1 helps us ship.
+                  </p>
+                </div>
+                <form action="/api/pledge" method="post" className="flex-shrink-0">
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background transition hover:opacity-90"
+                  >
+                    Pledge {PLEDGE_AMOUNT_LABEL}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <p className="mt-4 text-xs text-muted max-w-md mx-auto italic">
+              Honest note: our marketing is a step ahead of the build. Join the
+              list and help us shape what ships first.
+            </p>
           </div>
 
           {/* Live Demo */}
@@ -185,15 +204,15 @@ export default function LandingPage() {
                     Description
                   </span>
                 </div>
-                <Link
-                  href="/auth/signup"
+                <a
+                  href="#waitlist"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-accent-hover px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 shadow-md shadow-accent/20"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
                   </svg>
-                  Generate
-                </Link>
+                  Get Early Access
+                </a>
               </div>
             </div>
             <div className="flex items-center justify-center gap-4 mt-5 text-xs text-muted">
@@ -203,11 +222,11 @@ export default function LandingPage() {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent"></span>
-                No credit card required
+                Priority early access
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent"></span>
-                3 free sheets
+                Founder pricing
               </span>
             </div>
           </div>
@@ -315,8 +334,8 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/auth/signup"
+                <a
+                  href="#waitlist"
                   className={clsx(
                     "mt-5 block w-full rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition",
                     tier.highlighted
@@ -324,8 +343,8 @@ export default function LandingPage() {
                       : "bg-foreground text-background hover:opacity-90"
                   )}
                 >
-                  {tier.cta}
-                </Link>
+                  Join Waitlist
+                </a>
               </div>
             ))}
           </div>
@@ -336,18 +355,26 @@ export default function LandingPage() {
       <section className="border-t border-border bg-accent-light">
         <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6 text-center">
           <h2 className="text-2xl font-bold tracking-tight">
-            Ready to create your mascot?
+            Be first when we launch.
           </h2>
           <p className="text-sm text-muted mt-2 max-w-md mx-auto">
-            Join creators and brands already using Mascoty to build their
-            character identity. Start with 3 free character sheets.
+            We&apos;re still building. Marketing&apos;s a little ahead of the
+            product — drop your email to save your spot and get in early.
           </p>
-          <Link
-            href="/auth/signup"
-            className="mt-6 inline-block rounded-xl bg-accent px-8 py-3.5 text-base font-semibold text-white transition hover:bg-accent-hover shadow-lg shadow-accent/20"
-          >
-            Get Started Free
-          </Link>
+          <div className="mt-6">
+            <IntentForm source="footer-cta" buttonLabel="Get Early Access" />
+          </div>
+          <div className="mt-4 text-xs text-muted">
+            or{" "}
+            <form action="/api/pledge" method="post" className="inline">
+              <button
+                type="submit"
+                className="underline underline-offset-2 hover:text-accent transition font-medium"
+              >
+                back us with {PLEDGE_AMOUNT_LABEL} → {PLEDGE_CREDIT_LABEL} launch credit
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
