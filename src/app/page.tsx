@@ -118,6 +118,69 @@ export default function LandingPage() {
           <div className="mt-14">
             <LiveDemo />
           </div>
+
+          {/* Case Studies */}
+          <div id="case-studies" className="mt-16">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl font-bold tracking-tight">
+                Real brands. Real results.
+              </h2>
+              <p className="text-sm text-muted mt-2">
+                See how companies use Mascoty to build their brand identity.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+              <Link
+                href="/blog/panda-charging-case-study"
+                className="group rounded-xl border border-border bg-card overflow-hidden transition hover:border-accent hover:shadow-sm text-left"
+              >
+                <div className="aspect-[2/1] relative overflow-hidden">
+                  <Image
+                    src="/panda/panda.png"
+                    alt="Panda the Charging Hero character sheet"
+                    width={1400}
+                    height={900}
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="p-5">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-accent mb-2">Case Study</div>
+                  <h3 className="font-semibold group-hover:text-accent transition">
+                    How Panda Charging built a brand mascot that keeps guests plugged in
+                  </h3>
+                  <p className="text-xs text-muted mt-2 leading-relaxed">
+                    From character sheet to kiosk branding — how a powerbank rental company used Mascoty to create &ldquo;Panda the Charging Hero&rdquo; across all touchpoints.
+                  </p>
+                  <div className="mt-3 text-xs font-medium text-accent">Read case study &rarr;</div>
+                </div>
+              </Link>
+
+              <Link
+                href="/blog/yonosim-korea-case-study"
+                className="group rounded-xl border border-border bg-card overflow-hidden transition hover:border-accent hover:shadow-sm text-left"
+              >
+                <div className="aspect-[2/1] relative overflow-hidden">
+                  <Image
+                    src="/yoni/yoni.png"
+                    alt="Yoni — Travel Signal Spirit character sheet"
+                    width={1400}
+                    height={900}
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+                <div className="p-5">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-accent mb-2">Case Study</div>
+                  <h3 className="font-semibold group-hover:text-accent transition">
+                    YonoSIM Korea: from character sheet to animated video in one day
+                  </h3>
+                  <p className="text-xs text-muted mt-2 leading-relaxed">
+                    How a travel eSIM brand used Mascoty to generate their mascot &ldquo;Yoni,&rdquo; produce website content, and create animated marketing videos with Seedance 2.0.
+                  </p>
+                  <div className="mt-3 text-xs font-medium text-accent">Read case study &rarr;</div>
+                </div>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -230,71 +293,6 @@ export default function LandingPage() {
                 Founder pricing
               </span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Case Studies */}
-      <section id="case-studies" className="border-t border-border bg-card">
-        <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold tracking-tight">
-              Real brands. Real results.
-            </h2>
-            <p className="text-sm text-muted mt-2">
-              See how companies use Mascoty to build their brand identity.
-            </p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
-            <Link
-              href="/blog/panda-charging-case-study"
-              className="group rounded-xl border border-border bg-background overflow-hidden transition hover:border-accent hover:shadow-sm"
-            >
-              <div className="aspect-[2/1] relative overflow-hidden">
-                <Image
-                  src="/panda/panda.png"
-                  alt="Panda the Charging Hero character sheet"
-                  width={1400}
-                  height={900}
-                  className="w-full h-full object-cover object-top"
-                />
-              </div>
-              <div className="p-5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-accent mb-2">Case Study</div>
-                <h3 className="font-semibold group-hover:text-accent transition">
-                  How Panda Charging built a brand mascot that keeps guests plugged in
-                </h3>
-                <p className="text-xs text-muted mt-2 leading-relaxed">
-                  From character sheet to kiosk branding — how a powerbank rental company used Mascoty to create &ldquo;Panda the Charging Hero&rdquo; across all touchpoints.
-                </p>
-                <div className="mt-3 text-xs font-medium text-accent">Read case study &rarr;</div>
-              </div>
-            </Link>
-
-            <Link
-              href="/blog/yonosim-korea-case-study"
-              className="group rounded-xl border border-border bg-background overflow-hidden transition hover:border-accent hover:shadow-sm"
-            >
-              <div className="aspect-[2/1] relative overflow-hidden">
-                <Image
-                  src="/yoni/yoni.png"
-                  alt="Yoni — Travel Signal Spirit character sheet"
-                  width={1400}
-                  height={900}
-                  className="w-full h-full object-cover object-top"
-                />
-              </div>
-              <div className="p-5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-accent mb-2">Case Study</div>
-                <h3 className="font-semibold group-hover:text-accent transition">
-                  YonoSIM Korea: from character sheet to animated video in one day
-                </h3>
-                <p className="text-xs text-muted mt-2 leading-relaxed">
-                  How a travel eSIM brand used Mascoty to generate their mascot &ldquo;Yoni,&rdquo; produce website content, and create animated marketing videos with Seedance 2.0.
-                </p>
-                <div className="mt-3 text-xs font-medium text-accent">Read case study &rarr;</div>
-              </div>
-            </Link>
           </div>
         </div>
       </section>
