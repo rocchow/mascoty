@@ -110,7 +110,7 @@ export async function POST(request: Request) {
   };
 
   // Kick off in the background; don't await.
-  runFreeTrialGeneration(generationId, shareSlug, null, params).catch(
+  runFreeTrialGeneration(generationId, shareSlug, null, params, galleryOptIn).catch(
     (err) => console.error("[free-trial] background failed", err),
   );
 

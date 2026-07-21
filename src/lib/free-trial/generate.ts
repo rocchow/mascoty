@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { getOpenAI } from "@/lib/openai/client";
 import { buildCharacterSheetPrompt } from "@/lib/openai/prompts";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -9,6 +10,7 @@ export async function runFreeTrialGeneration(
   shareSlug: string,
   email: string | null,
   params: MascotParams,
+  galleryOptIn = false,
 ) {
   const supabase = createAdminClient();
 
@@ -62,6 +64,13 @@ export async function runFreeTrialGeneration(
         completed_at: new Date().toISOString(),
       })
       .eq("id", generationId);
+
+    // Bust the landing-page ISR cache so the new sheet appears in
+    // "Fresh from the community" on the next request, instead of waiting
+    // out the 60s revalidate window.
+    if (galleryOptIn) {
+      revalidatePath("/");
+    }
 
     // Fire-and-forget email delivery — only when we actually captured one
     // (the anon free trial no longer asks; sign-in is the new hook instead).
