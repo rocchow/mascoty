@@ -594,21 +594,31 @@ function BriefEditor({
   ) => onChange({ ...brand, [key]: value });
 
   const remaining = quota?.remainingHourly ?? null;
-  const outOfSlots = remaining !== null && remaining <= 0;
+  const hourlyOut = remaining !== null && remaining <= 0;
+  const dailyOut = quota?.ipUsedToday === true;
+  const outOfSlots = hourlyOut || dailyOut;
+  const dailyEta =
+    dailyOut && quota?.ipResetsAt
+      ? formatEta(new Date(quota.ipResetsAt), now)
+      : null;
   const nextSlotEta =
-    outOfSlots && quota?.nextSlotAt
+    hourlyOut && quota?.nextSlotAt
       ? formatEta(new Date(quota.nextSlotAt), now)
       : null;
 
   const btnLabel = busy
     ? "Generating…"
-    : outOfSlots
-      ? nextSlotEta
-        ? `Free tier full · next slot in ${nextSlotEta}`
-        : "Free tier full · try again shortly"
-      : remaining !== null
-        ? `✨ Generate my character sheet · ${remaining} of 10 left this hour`
-        : "✨ Generate my character sheet";
+    : dailyOut
+      ? dailyEta
+        ? `You already got your free trial · resets in ${dailyEta}`
+        : "You already got your free trial today"
+      : hourlyOut
+        ? nextSlotEta
+          ? `Free tier full · next slot in ${nextSlotEta}`
+          : "Free tier full · try again shortly"
+        : remaining !== null
+          ? `✨ Generate my character sheet · ${remaining} of 10 left this hour`
+          : "✨ Generate my character sheet";
 
   return (
     <div className="space-y-4 text-left">
