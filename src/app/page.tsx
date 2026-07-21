@@ -4,7 +4,6 @@ import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
 import HeroExperience from "./components/HeroExperience";
-import { PLEDGE_AMOUNT_LABEL, PLEDGE_CREDIT_LABEL } from "@/lib/pledge";
 import { getGalleryItems } from "@/lib/free-trial/gallery";
 
 const FEATURES = [
@@ -286,6 +285,14 @@ export default async function LandingPage() {
                   </div>
                 )}
                 <div className="text-sm font-semibold">{tier.name}</div>
+                <div
+                  className={clsx(
+                    "mt-1 text-[11px] font-medium uppercase tracking-wide",
+                    tier.highlighted ? "text-accent" : "text-muted",
+                  )}
+                >
+                  {tier.bestFor}
+                </div>
                 <div className="mt-3">
                   <span className="text-3xl font-bold">
                     {tier.price === 0 ? "Free" : `$${tier.price}`}
@@ -340,19 +347,7 @@ export default async function LandingPage() {
             >
               ✨ Generate my character sheet
             </a>
-            <form action="/api/pledge" method="post" className="inline">
-              <button
-                type="submit"
-                className="rounded-lg border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:border-accent"
-              >
-                or pledge {PLEDGE_AMOUNT_LABEL} → {PLEDGE_CREDIT_LABEL} launch credit
-              </button>
-            </form>
           </div>
-          <p className="mt-3 text-xs text-muted">
-            Stripe collects your email at checkout. Your {PLEDGE_AMOUNT_LABEL}{" "}
-            converts to {PLEDGE_CREDIT_LABEL} of credit at launch.
-          </p>
         </div>
       </section>
 
