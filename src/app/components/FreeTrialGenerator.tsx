@@ -291,47 +291,23 @@ export default function FreeTrialGenerator() {
           <h3 className="text-xl font-bold">You already got your free preview today</h3>
           <p className="text-sm text-muted mt-2 max-w-md mx-auto">
             The free trial is <strong>1 sheet per visitor per day</strong>.
-            Come back tomorrow for another — or be first in line when the HD
-            version lands and get sharp, print-ready sheets on demand.
+            Come back tomorrow for another — or skip the line with a $1 pledge
+            and get $5 of launch credit toward HD & unlimited when they land.
           </p>
           <div className="mt-6 max-w-md mx-auto rounded-xl border border-accent/30 bg-accent-light p-4 text-left">
             <div className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
-              Waiting list · HD version
+              Skip the line · $5 launch credit
             </div>
             <p className="text-xs text-muted mb-3">
-              We&apos;ll email you when HD quality and unlimited generations
-              go live. No spam.
+              Pledge $1 now → $5 of credit at launch + priority when HD flips on.
+              Stripe collects your email at checkout.
             </p>
-            <form
-              className="flex gap-2"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                await fetch("/api/intent", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    email,
-                    source: "rate-limited-ip",
-                    intent: `Wants HD after using free preview for ${url || "(no URL)"}`,
-                  }),
-                });
-                setEmail("");
-                alert("Got it — we'll ping you when HD is live.");
-              }}
-            >
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@company.com"
-                className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm"
-              />
+            <form action="/api/pledge" method="post">
               <button
                 type="submit"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover whitespace-nowrap"
+                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
               >
-                Notify me
+                Pledge $1 → Get Early Access
               </button>
             </form>
           </div>
@@ -354,41 +330,19 @@ export default function FreeTrialGenerator() {
           <h3 className="text-xl font-bold">Free trial is busy right now</h3>
           <p className="text-sm text-muted mt-2 max-w-md mx-auto">
             A lot of people are trying it at once. Give it a few minutes and
-            try again — or drop your email and we&apos;ll ping you when
-            capacity opens up.
+            try again — or skip the queue with a $1 pledge and lock in $5 of
+            launch credit.
           </p>
-          <form
-            className="mt-6 max-w-md mx-auto flex gap-2"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              await fetch("/api/intent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email,
-                  source: "rate-limited-global",
-                  intent: `Wanted to generate for ${url || "(no URL)"} (global cap)`,
-                }),
-              });
-              setEmail("");
-              alert("Got it — we'll ping you.");
-            }}
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="you@company.com"
-              className="flex-1 rounded-lg border border-border bg-background px-4 py-2 text-sm"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
-            >
-              Notify me
-            </button>
-          </form>
+          <div className="mt-6 max-w-md mx-auto">
+            <form action="/api/pledge" method="post">
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
+              >
+                Pledge $1 → Skip the queue
+              </button>
+            </form>
+          </div>
           <button
             onClick={resetAll}
             className="mt-4 text-xs text-muted underline hover:text-foreground"

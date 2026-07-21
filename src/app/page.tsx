@@ -4,7 +4,6 @@ import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
 import FreeTrialGenerator from "./components/FreeTrialGenerator";
-import IntentForm from "./components/IntentForm";
 import { PLEDGE_AMOUNT_LABEL, PLEDGE_CREDIT_LABEL } from "@/lib/pledge";
 import { getGalleryItems } from "@/lib/free-trial/gallery";
 
@@ -91,30 +90,6 @@ export default async function LandingPage() {
             <FreeTrialGenerator />
           </div>
 
-          {/* Pledge callout */}
-          <div className="mt-8 max-w-md mx-auto rounded-xl border border-dashed border-accent/40 bg-accent-light/40 p-4 text-left">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl leading-none">&#x1F91D;</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-foreground">
-                  Like it? Back us with {PLEDGE_AMOUNT_LABEL}
-                </div>
-                <p className="text-xs text-muted mt-0.5 leading-relaxed">
-                  Get {PLEDGE_CREDIT_LABEL} of launch credit + priority when we
-                  turn on paid tiers.
-                </p>
-              </div>
-              <form action="/api/pledge" method="post" className="flex-shrink-0">
-                <button
-                  type="submit"
-                  className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background transition hover:opacity-90"
-                >
-                  Pledge {PLEDGE_AMOUNT_LABEL}
-                </button>
-              </form>
-            </div>
-          </div>
-
           {/* Case Studies */}
           <div id="case-studies" className="mt-16">
             <div className="text-center mb-12">
@@ -175,6 +150,48 @@ export default async function LandingPage() {
                   <div className="mt-3 text-xs font-medium text-accent">Read case study &rarr;</div>
                 </div>
               </Link>
+            </div>
+
+            {/* Early-access pledge (from main) */}
+            <div id="early-access" className="mt-14 scroll-mt-24">
+              <form
+                action="/api/pledge"
+                method="post"
+                className="w-full max-w-md mx-auto rounded-2xl border border-border bg-background p-4 shadow-sm text-left space-y-3"
+              >
+                <div>
+                  <label
+                    htmlFor="intent-hero"
+                    className="block text-xs font-medium text-muted mb-1.5"
+                  >
+                    What are you hoping to use it for?{" "}
+                    <span className="text-muted/60 font-normal">(optional)</span>
+                  </label>
+                  <textarea
+                    id="intent-hero"
+                    name="intent"
+                    rows={2}
+                    maxLength={500}
+                    placeholder="e.g. Mascot for our SaaS onboarding, kids' book character, Twitch stream avatar…"
+                    className="w-full rounded-lg border border-border bg-card p-2.5 text-sm text-foreground placeholder:text-muted/60 outline-none resize-none transition focus:border-accent"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-accent px-6 py-3 text-base font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
+                >
+                  Pledge {PLEDGE_AMOUNT_LABEL} &rarr; Get Early Access
+                </button>
+                <p className="text-xs text-muted text-center leading-relaxed">
+                  Locks in <span className="font-semibold text-foreground">{PLEDGE_CREDIT_LABEL} of launch credit</span>{" "}
+                  + priority access. Stripe collects your email at checkout.
+                </p>
+              </form>
+
+              <p className="mt-4 text-xs text-muted max-w-md mx-auto italic">
+                Honest note: the free preview is real; HD, unlimited generations,
+                and video are what your {PLEDGE_AMOUNT_LABEL} helps us ship.
+              </p>
             </div>
           </div>
         </div>
@@ -291,7 +308,7 @@ export default async function LandingPage() {
               Simple pricing
             </h2>
             <p className="text-sm text-muted mt-2">
-              Free trial today. Full pricing coming soon.
+              Free preview today. Full pricing at launch.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
@@ -332,7 +349,7 @@ export default async function LandingPage() {
                   ))}
                 </ul>
                 <a
-                  href="#try"
+                  href={tier.price === 0 ? "#try" : "#early-access"}
                   className={clsx(
                     "mt-5 block w-full rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition",
                     tier.highlighted
@@ -340,7 +357,7 @@ export default async function LandingPage() {
                       : "bg-foreground text-background hover:opacity-90"
                   )}
                 >
-                  {tier.price === 0 ? "Try Free" : "Coming soon"}
+                  {tier.price === 0 ? "Try Free" : "Get Early Access"}
                 </a>
               </div>
             ))}
@@ -358,29 +375,26 @@ export default async function LandingPage() {
             One free preview per day. Paste your URL and go — HD version
             unlocks after launch.
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#try"
-              className="inline-block rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
+              className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
             >
               ✨ Generate my character sheet
             </a>
-          </div>
-          <div className="mt-4 text-xs text-muted">
-            or{" "}
             <form action="/api/pledge" method="post" className="inline">
               <button
                 type="submit"
-                className="underline underline-offset-2 hover:text-accent transition font-medium"
+                className="rounded-lg border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:border-accent"
               >
-                back us with {PLEDGE_AMOUNT_LABEL} → {PLEDGE_CREDIT_LABEL} launch credit
+                or pledge {PLEDGE_AMOUNT_LABEL} → {PLEDGE_CREDIT_LABEL} launch credit
               </button>
             </form>
           </div>
-          <div className="mt-8 max-w-sm mx-auto">
-            <p className="text-xs text-muted mb-2">Or get product updates:</p>
-            <IntentForm source="footer-cta" buttonLabel="Keep me posted" />
-          </div>
+          <p className="mt-3 text-xs text-muted">
+            Stripe collects your email at checkout. Your {PLEDGE_AMOUNT_LABEL}{" "}
+            converts to {PLEDGE_CREDIT_LABEL} of credit at launch.
+          </p>
         </div>
       </section>
 
