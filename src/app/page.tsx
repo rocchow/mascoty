@@ -76,13 +76,13 @@ export default async function LandingPage() {
             Free preview · 1 sheet per day, no signup
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-3xl mx-auto">
-            Turn any idea into a{" "}
-            <span className="text-accent">complete mascot</span>{" "}
-            character sheet
+            Turn your business name/logo into a{" "}
+            <span className="text-accent">complete mascot</span>
           </h1>
           <p className="mt-5 text-lg text-muted max-w-xl mx-auto">
-            Paste your URL, we&apos;ll draft your brand brief, and generate a
-            full character sheet in ~60 seconds. No signup required.
+            Character sheet with turnaround views, expressions, poses, color
+            palette, style guide — all generated in 60 seconds by AI.
+            Production-ready.
           </p>
 
           {/* Real generator */}
