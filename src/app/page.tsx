@@ -3,7 +3,7 @@ import Image from "next/image";
 import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
-import FreeTrialGenerator from "./components/FreeTrialGenerator";
+import HeroExperience from "./components/HeroExperience";
 import { PLEDGE_AMOUNT_LABEL, PLEDGE_CREDIT_LABEL } from "@/lib/pledge";
 import { getGalleryItems } from "@/lib/free-trial/gallery";
 
@@ -60,7 +60,7 @@ export default async function LandingPage() {
           </nav>
           <div className="flex items-center gap-3">
             <a
-              href="#try"
+              href="#try-now"
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover"
             >
               Try Free
@@ -85,9 +85,9 @@ export default async function LandingPage() {
             Production-ready.
           </p>
 
-          {/* Real generator */}
-          <div id="try" className="mt-10 scroll-mt-24">
-            <FreeTrialGenerator />
+          {/* Demo by default, flips to real generator on any CTA */}
+          <div className="mt-10">
+            <HeroExperience />
           </div>
 
           {/* Case Studies */}
@@ -349,7 +349,7 @@ export default async function LandingPage() {
                   ))}
                 </ul>
                 <a
-                  href={tier.price === 0 ? "#try" : "#early-access"}
+                  href={tier.price === 0 ? "#try-now" : "#early-access"}
                   className={clsx(
                     "mt-5 block w-full rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition",
                     tier.highlighted
@@ -377,7 +377,7 @@ export default async function LandingPage() {
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
-              href="#try"
+              href="#try-now"
               className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
             >
               ✨ Generate my character sheet

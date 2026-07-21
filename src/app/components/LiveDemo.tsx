@@ -70,7 +70,11 @@ function Confetti() {
   );
 }
 
-export default function LiveDemo() {
+interface LiveDemoProps {
+  onStartTrial?: () => void;
+}
+
+export default function LiveDemo({ onStartTrial }: LiveDemoProps = {}) {
   const [stage, setStage] = useState<Stage>("idle");
   const [typedLength, setTypedLength] = useState(0);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -285,12 +289,20 @@ export default function LiveDemo() {
         </div>
       </div>
 
-      {/* Replay */}
+      {/* Post-demo CTAs */}
       {stage === "complete" && (
-        <div className="flex justify-center animate-fade-in-up py-4">
+        <div className="flex flex-col items-center gap-3 animate-fade-in-up py-6">
+          {onStartTrial && (
+            <button
+              onClick={onStartTrial}
+              className="rounded-xl bg-gradient-to-r from-accent to-accent-hover px-6 py-3 text-sm font-semibold text-white shadow-md shadow-accent/20 hover:opacity-90 transition cursor-pointer"
+            >
+              ✨ Now try it with YOUR brand &rarr;
+            </button>
+          )}
           <button
             onClick={() => setStage("idle")}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-accent hover:text-accent-hover hover:bg-accent-light transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-accent transition-colors cursor-pointer"
           >
             Replay demo
           </button>
