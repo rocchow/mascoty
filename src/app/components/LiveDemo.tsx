@@ -78,6 +78,7 @@ export default function LiveDemo({ onStartTrial }: LiveDemoProps = {}) {
   const [stage, setStage] = useState<Stage>("idle");
   const [typedLength, setTypedLength] = useState(0);
   const [hasPlayed, setHasPlayed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const startDemo = useCallback(() => {
@@ -86,10 +87,33 @@ export default function LiveDemo({ onStartTrial }: LiveDemoProps = {}) {
     setHasPlayed(true);
   }, []);
 
+  // Auto-start only when the demo is scrolled into the top of the viewport —
+  // so users don't miss it playing from the fold or offscreen.
   useEffect(() => {
     if (stage !== "idle" || hasPlayed) return;
-    const timeout = setTimeout(startDemo, 1500);
-    return () => clearTimeout(timeout);
+    const el = containerRef.current;
+    if (!el) return;
+
+    let timeoutId: number | undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && timeoutId === undefined) {
+          timeoutId = window.setTimeout(startDemo, 400);
+        }
+      },
+      {
+        // Offset the sticky nav (~64px) on top, and require the demo to enter
+        // the top ~40% of the viewport before it counts as "anchored".
+        rootMargin: "-72px 0px -60% 0px",
+        threshold: 0,
+      }
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, [stage, hasPlayed, startDemo]);
 
   useEffect(() => {
@@ -137,7 +161,7 @@ export default function LiveDemo({ onStartTrial }: LiveDemoProps = {}) {
   const swirling = stage === "swirling";
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div ref={containerRef} className="w-full max-w-4xl mx-auto">
       <div className="rounded-2xl border-2 border-border bg-white dark:bg-[#1a1830] shadow-xl overflow-hidden">
         {/* Window chrome */}
         <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-border dark:from-[#1e1b3a] dark:to-[#252240]">
