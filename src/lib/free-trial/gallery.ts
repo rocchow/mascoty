@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 export interface GalleryItem {
   shareSlug: string;
@@ -10,8 +11,8 @@ export interface GalleryItem {
 }
 
 export async function getGalleryItems(limit = 12): Promise<GalleryItem[]> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = getSupabaseUrl();
+  const key = getSupabaseSecretKey();
   if (!url || !key || !url.startsWith("http")) {
     // Build-time or misconfigured env — render empty gallery.
     return [];
