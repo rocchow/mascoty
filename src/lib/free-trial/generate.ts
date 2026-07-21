@@ -13,21 +13,23 @@ export async function runFreeTrialGeneration(
   const supabase = createAdminClient();
 
   try {
+    const prompt = buildCharacterSheetPrompt(params);
+    const model = "gpt-image-2";
+    const quality = "low";
+
     await supabase
       .from("free_trial_generations")
-      .update({ status: "generating" })
+      .update({ status: "generating", prompt, model, quality })
       .eq("id", generationId);
 
-    const prompt = buildCharacterSheetPrompt(params);
-
-    // Preview quality: ~$0.016 per generation. HD tier (quality: "high") is
-    // ~$0.25 and reserved for the paid upgrade path.
+    // Preview tier on gpt-image-2 at 1536x1024: ~$0.005/image.
+    // Medium is ~$0.041, high is ~$0.165 — reserved for the paid upgrade path.
     const response = await getOpenAI().images.generate({
-      model: "gpt-image-1",
+      model,
       prompt,
       n: 1,
       size: "1536x1024",
-      quality: "low",
+      quality,
     });
 
     const imageData = response.data?.[0];
