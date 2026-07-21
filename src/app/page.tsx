@@ -3,8 +3,9 @@ import Image from "next/image";
 import { PRICING_TIERS } from "@/lib/constants";
 import { MASCOT_STYLES } from "@/types/mascot";
 import { clsx } from "clsx";
-import LiveDemo from "./components/LiveDemo";
+import FreeTrialGenerator from "./components/FreeTrialGenerator";
 import { PLEDGE_AMOUNT_LABEL, PLEDGE_CREDIT_LABEL } from "@/lib/pledge";
+import { getGalleryItems } from "@/lib/free-trial/gallery";
 
 const FEATURES = [
   {
@@ -37,7 +38,11 @@ const FEATURES = [
   },
 ];
 
-export default function LandingPage() {
+export const revalidate = 60;
+
+export default async function LandingPage() {
+  const gallery = await getGalleryItems(12);
+
   return (
     <div className="flex flex-col min-h-full">
       {/* Nav */}
@@ -47,17 +52,18 @@ export default function LandingPage() {
             <span className="text-accent">Mascoty</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-6 text-sm">
+            <a href="#try" className="text-muted hover:text-foreground transition">Try it</a>
+            <a href="#gallery" className="text-muted hover:text-foreground transition">Gallery</a>
             <a href="#features" className="text-muted hover:text-foreground transition">Features</a>
-            <a href="#how-it-works" className="text-muted hover:text-foreground transition">How it Works</a>
             <a href="#case-studies" className="text-muted hover:text-foreground transition">Case Studies</a>
             <a href="#pricing" className="text-muted hover:text-foreground transition">Pricing</a>
           </nav>
           <div className="flex items-center gap-3">
             <a
-              href="#early-access"
+              href="#try"
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover"
             >
-              Get Early Access
+              Try Free
             </a>
           </div>
         </div>
@@ -66,6 +72,9 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative">
         <div className="max-w-6xl mx-auto px-4 py-20 sm:px-6 sm:py-28 text-center">
+          <div className="inline-block rounded-full bg-accent-light px-3 py-1 text-xs font-semibold text-accent mb-6">
+            Free preview · 1 sheet per day, no signup
+          </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-3xl mx-auto">
             Turn your business name/logo into a{" "}
             <span className="text-accent">complete mascot</span>
@@ -76,9 +85,9 @@ export default function LandingPage() {
             Production-ready.
           </p>
 
-          {/* Live Demo */}
-          <div className="mt-14">
-            <LiveDemo />
+          {/* Real generator */}
+          <div id="try" className="mt-10 scroll-mt-24">
+            <FreeTrialGenerator />
           </div>
 
           {/* Case Studies */}
@@ -143,6 +152,7 @@ export default function LandingPage() {
               </Link>
             </div>
 
+            {/* Early-access pledge (from main) */}
             <div id="early-access" className="mt-14 scroll-mt-24">
               <form
                 action="/api/pledge"
@@ -179,16 +189,70 @@ export default function LandingPage() {
               </form>
 
               <p className="mt-4 text-xs text-muted max-w-md mx-auto italic">
-                Honest note: our marketing is a step ahead of the build. Your{" "}
-                {PLEDGE_AMOUNT_LABEL} helps us ship and shapes what lands first.
+                Honest note: the free preview is real; HD, unlimited generations,
+                and video are what your {PLEDGE_AMOUNT_LABEL} helps us ship.
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Gallery */}
+      <section id="gallery" className="border-t border-border bg-card scroll-mt-24">
+        <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Fresh from the community
+            </h2>
+            <p className="text-sm text-muted mt-2">
+              Character sheets generated in the last little while, shared by
+              their makers.
+            </p>
+          </div>
+          {gallery.length === 0 ? (
+            <div className="max-w-md mx-auto rounded-xl border-2 border-dashed border-border p-8 text-center">
+              <div className="text-4xl mb-2">🎨</div>
+              <div className="text-sm text-muted">
+                No public sheets yet — be the first to opt into the gallery
+                when you generate.
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {gallery.map((item) => (
+                <Link
+                  key={item.shareSlug}
+                  href={`/s/${item.shareSlug}`}
+                  className="group rounded-xl border border-border bg-background overflow-hidden hover:border-accent hover:shadow-md transition"
+                >
+                  <div className="aspect-[3/2] relative overflow-hidden bg-card">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.imageUrl}
+                      alt={`${item.name} character sheet`}
+                      className="w-full h-full object-cover object-top group-hover:scale-[1.02] transition-transform"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <div className="text-sm font-semibold truncate group-hover:text-accent transition">
+                      {item.name}
+                    </div>
+                    {item.role && (
+                      <div className="text-[11px] text-muted truncate">
+                        {item.role}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Styles */}
-      <section className="border-t border-border bg-card">
+      <section className="border-t border-border">
         <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold tracking-tight">
@@ -202,7 +266,7 @@ export default function LandingPage() {
             {MASCOT_STYLES.map((s) => (
               <div
                 key={s.value}
-                className="rounded-xl border border-border bg-background p-4 text-center"
+                className="rounded-xl border border-border bg-card p-4 text-center"
               >
                 <div className="text-sm font-semibold">{s.label}</div>
                 <div className="text-xs text-muted mt-1">{s.description}</div>
@@ -213,7 +277,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="border-t border-border">
+      <section id="features" className="border-t border-border bg-card">
         <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold tracking-tight">
@@ -225,77 +289,13 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.title} className="rounded-xl border border-border bg-card p-5">
+              <div key={f.title} className="rounded-xl border border-border bg-background p-5">
                 <h3 className="font-semibold text-sm">{f.title}</h3>
                 <p className="text-xs text-muted mt-1.5 leading-relaxed">
                   {f.desc}
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it works — AI Input */}
-      <section id="how-it-works" className="border-t border-border bg-card">
-        <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold tracking-tight">
-              Describe it. We&apos;ll design it.
-            </h2>
-            <p className="text-sm text-muted mt-2">
-              Paste your website URL or describe your brand — our AI does the rest.
-            </p>
-          </div>
-          <div className="max-w-2xl mx-auto">
-            <div className="rounded-2xl border-2 border-border bg-background p-4 sm:p-5 shadow-sm transition focus-within:border-accent focus-within:shadow-lg focus-within:shadow-accent/10">
-              <div className="text-sm text-muted mb-3">
-                Tell us about your brand...
-              </div>
-              <div className="min-h-[80px] rounded-xl bg-card border border-border p-3 text-sm text-muted/50 leading-relaxed">
-                e.g. &ldquo;https://www.pandacharging.com — a powerbank rental service for hospitality venues. Friendly, green, panda-themed.&rdquo;
-              </div>
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center gap-3 text-xs text-muted">
-                  <span className="flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.07-9.07l4.5-4.5a4.5 4.5 0 016.364 6.364l-1.757 1.757" />
-                    </svg>
-                    URL
-                  </span>
-                  <span className="text-border">|</span>
-                  <span className="flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
-                    </svg>
-                    Description
-                  </span>
-                </div>
-                <a
-                  href="#early-access"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-accent to-accent-hover px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 shadow-md shadow-accent/20"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-                  </svg>
-                  Get Early Access
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-4 mt-5 text-xs text-muted">
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent"></span>
-                ~60 second generation
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent"></span>
-                Priority early access
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent"></span>
-                Founder pricing
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -308,7 +308,7 @@ export default function LandingPage() {
               Simple pricing
             </h2>
             <p className="text-sm text-muted mt-2">
-              Start free. Upgrade when you need more.
+              Free preview today. Full pricing at launch.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
@@ -349,7 +349,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <a
-                  href="#early-access"
+                  href={tier.price === 0 ? "#try" : "#early-access"}
                   className={clsx(
                     "mt-5 block w-full rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition",
                     tier.highlighted
@@ -357,7 +357,7 @@ export default function LandingPage() {
                       : "bg-foreground text-background hover:opacity-90"
                   )}
                 >
-                  Get Early Access
+                  {tier.price === 0 ? "Try Free" : "Get Early Access"}
                 </a>
               </div>
             ))}
@@ -369,20 +369,28 @@ export default function LandingPage() {
       <section className="border-t border-border bg-accent-light">
         <div className="max-w-6xl mx-auto px-4 py-16 sm:px-6 text-center">
           <h2 className="text-2xl font-bold tracking-tight">
-            Be first when we launch.
+            Try it now — no signup, no cost.
           </h2>
           <p className="text-sm text-muted mt-2 max-w-md mx-auto">
-            Pledge {PLEDGE_AMOUNT_LABEL} to lock in {PLEDGE_CREDIT_LABEL} of
-            launch credit and skip to the front of the line.
+            One free preview per day. Paste your URL and go — HD version
+            unlocks after launch.
           </p>
-          <form action="/api/pledge" method="post" className="mt-6">
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-6 py-3 text-base font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="#try"
+              className="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
             >
-              Pledge {PLEDGE_AMOUNT_LABEL} &rarr; Get Early Access
-            </button>
-          </form>
+              ✨ Generate my character sheet
+            </a>
+            <form action="/api/pledge" method="post" className="inline">
+              <button
+                type="submit"
+                className="rounded-lg border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground transition hover:border-accent"
+              >
+                or pledge {PLEDGE_AMOUNT_LABEL} → {PLEDGE_CREDIT_LABEL} launch credit
+              </button>
+            </form>
+          </div>
           <p className="mt-3 text-xs text-muted">
             Stripe collects your email at checkout. Your {PLEDGE_AMOUNT_LABEL}{" "}
             converts to {PLEDGE_CREDIT_LABEL} of credit at launch.
