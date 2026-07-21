@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://mascoty.ai"),
   title: "Mascoty — AI Mascot Character Sheet Generator",
   description:
     "Turn any idea into a complete mascot character sheet in 60 seconds. Turnaround views, expressions, poses, color palette — all in one image.",
@@ -23,6 +24,21 @@ export const metadata: Metadata = {
     url: "https://mascoty.ai",
     siteName: "Mascoty",
     type: "website",
+    images: [
+      {
+        url: "/mascoty_website_preview.png",
+        width: 1536,
+        height: 1024,
+        alt: "Mascoty — waving purple mascot in front of the app dashboard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mascoty — AI Mascot Character Sheet Generator",
+    description:
+      "Turn any idea into a complete mascot character sheet in 60 seconds.",
+    images: ["/mascoty_website_preview.png"],
   },
 };
 
