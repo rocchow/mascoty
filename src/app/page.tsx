@@ -151,48 +151,6 @@ export default async function LandingPage() {
                 </div>
               </Link>
             </div>
-
-            {/* Early-access pledge (from main) */}
-            <div id="early-access" className="mt-14 scroll-mt-24">
-              <form
-                action="/api/pledge"
-                method="post"
-                className="w-full max-w-md mx-auto rounded-2xl border border-border bg-background p-4 shadow-sm text-left space-y-3"
-              >
-                <div>
-                  <label
-                    htmlFor="intent-hero"
-                    className="block text-xs font-medium text-muted mb-1.5"
-                  >
-                    What are you hoping to use it for?{" "}
-                    <span className="text-muted/60 font-normal">(optional)</span>
-                  </label>
-                  <textarea
-                    id="intent-hero"
-                    name="intent"
-                    rows={2}
-                    maxLength={500}
-                    placeholder="e.g. Mascot for our SaaS onboarding, kids' book character, Twitch stream avatar…"
-                    className="w-full rounded-lg border border-border bg-card p-2.5 text-sm text-foreground placeholder:text-muted/60 outline-none resize-none transition focus:border-accent"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-accent px-6 py-3 text-base font-semibold text-white transition hover:bg-accent-hover shadow-md shadow-accent/20"
-                >
-                  Pledge {PLEDGE_AMOUNT_LABEL} &rarr; Get Early Access
-                </button>
-                <p className="text-xs text-muted text-center leading-relaxed">
-                  Locks in <span className="font-semibold text-foreground">{PLEDGE_CREDIT_LABEL} of launch credit</span>{" "}
-                  + priority access. Stripe collects your email at checkout.
-                </p>
-              </form>
-
-              <p className="mt-4 text-xs text-muted max-w-md mx-auto italic">
-                Honest note: the free preview is real; HD, unlimited generations,
-                and video are what your {PLEDGE_AMOUNT_LABEL} helps us ship.
-              </p>
-            </div>
           </div>
         </div>
       </section>
