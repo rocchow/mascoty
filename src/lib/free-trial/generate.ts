@@ -7,7 +7,7 @@ import { sendGenerationEmail } from "@/lib/email/send-generation";
 export async function runFreeTrialGeneration(
   generationId: string,
   shareSlug: string,
-  email: string,
+  email: string | null,
   params: MascotParams,
 ) {
   const supabase = createAdminClient();
@@ -63,22 +63,25 @@ export async function runFreeTrialGeneration(
       })
       .eq("id", generationId);
 
-    // Fire-and-forget email delivery.
-    sendGenerationEmail({
-      email,
-      shareSlug,
-      mascotName: params.name,
-      imageUrl: urlData.publicUrl,
-    })
-      .then(async () => {
-        await supabase
-          .from("free_trial_generations")
-          .update({ email_sent_at: new Date().toISOString() })
-          .eq("id", generationId);
+    // Fire-and-forget email delivery — only when we actually captured one
+    // (the anon free trial no longer asks; sign-in is the new hook instead).
+    if (email) {
+      sendGenerationEmail({
+        email,
+        shareSlug,
+        mascotName: params.name,
+        imageUrl: urlData.publicUrl,
       })
-      .catch((err) => {
-        console.error("[free-trial] email send failed", err);
-      });
+        .then(async () => {
+          await supabase
+            .from("free_trial_generations")
+            .update({ email_sent_at: new Date().toISOString() })
+            .eq("id", generationId);
+        })
+        .catch((err) => {
+          console.error("[free-trial] email send failed", err);
+        });
+    }
 
     return { success: true, imageUrl: urlData.publicUrl };
   } catch (error) {
