@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import DrainSwirl from "./DrainSwirl";
 
 type Stage =
   | "idle"
   | "typing"
   | "thinking"
   | "revealing-sheet"
+  | "swirling"
+  | "preview"
   | "complete";
 
 const PROMPT_TEXT = 'Help me create a mascot for my brand Mascoty named "M"';
@@ -105,12 +108,29 @@ export default function LiveDemo() {
   useEffect(() => {
     if (stage !== "revealing-sheet") return;
     sheetRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    const timeout = setTimeout(() => setStage("complete"), 800);
+    const timeout = setTimeout(() => setStage("swirling"), 2600);
+    return () => clearTimeout(timeout);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage !== "swirling") return;
+    const timeout = setTimeout(() => setStage("preview"), 750);
+    return () => clearTimeout(timeout);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage !== "preview") return;
+    const timeout = setTimeout(() => setStage("complete"), 400);
     return () => clearTimeout(timeout);
   }, [stage]);
 
   const showSheet =
-    stage === "revealing-sheet" || stage === "complete";
+    stage === "revealing-sheet" ||
+    stage === "swirling" ||
+    stage === "preview" ||
+    stage === "complete";
+  const showPreview = stage === "preview" || stage === "complete";
+  const swirling = stage === "swirling";
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -193,11 +213,11 @@ export default function LiveDemo() {
             </div>
           )}
 
-          {/* Character sheet reveal with confetti */}
+          {/* Character sheet reveal → swirl → website preview */}
           {showSheet && (
             <div ref={sheetRef} className="animate-fade-in-up relative">
               <Confetti />
-              {stage === "complete" && (
+              {(stage === "revealing-sheet" || stage === "swirling") && (
                 <div className="flex justify-center mb-4 animate-speech-pop">
                   <div className="relative bg-card rounded-xl px-6 py-2.5 shadow-lg border border-border">
                     <span className="text-lg font-bold text-foreground">
@@ -207,15 +227,58 @@ export default function LiveDemo() {
                   </div>
                 </div>
               )}
-              <div className="rounded-xl overflow-hidden border border-border shadow-lg">
-                <Image
-                  src="/mascoty.png"
-                  alt="Mascoty Character Sheet"
-                  width={1400}
-                  height={900}
-                  className="w-full h-auto"
-                  priority
-                />
+              {stage === "complete" && (
+                <div className="flex justify-center mb-4 animate-speech-pop">
+                  <div className="relative bg-card rounded-xl px-6 py-2.5 shadow-lg border border-border">
+                    <span className="text-lg font-bold text-foreground">
+                      Ready to ship ✨
+                    </span>
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-card border-r border-b border-border rotate-45" />
+                  </div>
+                </div>
+              )}
+              <div className="relative rounded-xl overflow-hidden border border-border shadow-lg bg-card aspect-[1400/900]">
+                {/* Website preview: sits underneath, revealed as the drain empties */}
+                {(swirling || showPreview) && (
+                  <div
+                    className="absolute inset-0 transition-opacity ease-out"
+                    style={{
+                      opacity: 1,
+                      transitionDuration: "600ms",
+                    }}
+                  >
+                    <Image
+                      src="/mascoty_website_preview.png"
+                      alt="Mascoty on your website"
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 1024px) 100vw, 900px"
+                    />
+                  </div>
+                )}
+                {/* Character sheet: static image before swirl, WebGL drain during */}
+                {!swirling && !showPreview && (
+                  <div className="absolute inset-0">
+                    <Image
+                      src="/mascoty.png"
+                      alt="Mascoty Character Sheet"
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 1024px) 100vw, 900px"
+                      priority
+                    />
+                  </div>
+                )}
+                {swirling && (
+                  <div className="absolute inset-0">
+                    <DrainSwirl
+                      src="/mascoty.png"
+                      playing
+                      durationMs={750}
+                      className="w-full h-full block"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
