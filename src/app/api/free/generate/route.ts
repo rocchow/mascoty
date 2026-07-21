@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateShareSlug } from "@/lib/free-trial/slug";
 import { runFreeTrialGeneration } from "@/lib/free-trial/generate";
-import { getRequestIp, hashIp } from "@/lib/free-trial/ip";
+import { fingerprintRequest } from "@/lib/free-trial/ip";
 import type { MascotColor, MascotParams, MascotStyle } from "@/types/mascot";
 import { MASCOT_STYLES } from "@/types/mascot";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STYLE_VALUES = MASCOT_STYLES.map((s) => s.value) as MascotStyle[];
 
 function s(v: unknown, max: number): string {
@@ -40,11 +39,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  const email = s(body.email, 254).toLowerCase();
-  if (!email || !EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: "invalid_email" }, { status: 400 });
-  }
-
   const name = s(body.name, 60);
   if (!name) {
     return NextResponse.json({ error: "missing_name" }, { status: 400 });
@@ -68,15 +62,18 @@ export async function POST(request: Request) {
 
   const supabase = createAdminClient();
 
-  const ipHash = hashIp(getRequestIp(request));
+  // Fingerprint = sha256(salt : ip : user-agent). One free trial per day per
+  // fingerprint; incognito + same UA still shares the same IP so we still
+  // catch it, and a UA swap alone isn't enough without a new IP either.
+  const ipHash = fingerprintRequest(request);
 
-  // Reserve a slot atomically (advisory-lock + per-IP + global count).
+  // Reserve a slot atomically (advisory-lock + per-fingerprint + global count).
   const shareSlug = generateShareSlug(10);
   const { data: reserveResult, error: reserveError } = await supabase.rpc(
     "reserve_free_trial_slot",
     {
       p_share_slug: shareSlug,
-      p_email: email,
+      p_email: null,
       p_ip_hash: ipHash,
       p_url: url,
       p_name: name,
@@ -113,7 +110,7 @@ export async function POST(request: Request) {
   };
 
   // Kick off in the background; don't await.
-  runFreeTrialGeneration(generationId, shareSlug, email, params).catch(
+  runFreeTrialGeneration(generationId, shareSlug, null, params).catch(
     (err) => console.error("[free-trial] background failed", err),
   );
 

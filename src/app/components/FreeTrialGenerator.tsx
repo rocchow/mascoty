@@ -25,7 +25,12 @@ interface ExtractedBrand {
   colors: MascotColor[];
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+interface Quota {
+  remainingHourly: number;
+  nextSlotAt: string | null;
+  ipUsedToday: boolean;
+  ipResetsAt: string | null;
+}
 
 const EMPTY_BRAND: ExtractedBrand = {
   name: "",
@@ -61,22 +66,65 @@ function ChromeWrap({ children }: { children: React.ReactNode }) {
   );
 }
 
+// "12m", "1h 03m", "34s" — for compact countdown on the Generate button.
+function formatEta(target: Date, now: Date): string {
+  const ms = target.getTime() - now.getTime();
+  if (ms <= 0) return "now";
+  const totalSec = Math.ceil(ms / 1000);
+  if (totalSec < 60) return `${totalSec}s`;
+  const totalMin = Math.ceil(totalSec / 60);
+  if (totalMin < 60) return `${totalMin}m`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${h}h ${m.toString().padStart(2, "0")}m`;
+}
+
 export default function FreeTrialGenerator() {
   const [stage, setStage] = useState<Stage>("url-input");
   const [url, setUrl] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [brand, setBrand] = useState<ExtractedBrand>(EMPTY_BRAND);
-  const [email, setEmail] = useState("");
-  const [galleryOptIn, setGalleryOptIn] = useState(false);
+  // Free trial defaults to public gallery — the user gets an explicit
+  // "your sheet will be public, ok?" prompt right above Generate to opt out.
+  const [galleryOptIn, setGalleryOptIn] = useState(true);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [shareSlug, setShareSlug] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [quota, setQuota] = useState<Quota | null>(null);
+  const [nowTick, setNowTick] = useState(() => Date.now());
   const briefRef = useRef<HTMLDivElement>(null);
 
   const shareUrl = useMemo(
     () => (shareSlug ? `/s/${shareSlug}` : null),
     [shareSlug],
   );
+
+  // Poll quota so the Generate button label stays fresh. Cheap DB read.
+  useEffect(() => {
+    let stopped = false;
+    const fetchQuota = async () => {
+      try {
+        const res = await fetch("/api/free/quota", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as Quota;
+        if (!stopped) setQuota(data);
+      } catch {
+        /* ignore */
+      }
+    };
+    fetchQuota();
+    const id = setInterval(fetchQuota, 30_000);
+    return () => {
+      stopped = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  // 1s ticker so countdowns actually count down.
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleImport = useCallback(async () => {
     setErrorMsg(null);
@@ -131,10 +179,6 @@ export default function FreeTrialGenerator() {
 
   const handleGenerate = useCallback(async () => {
     setErrorMsg(null);
-    if (!email || !EMAIL_RE.test(email)) {
-      setErrorMsg("Enter a valid email — we'll send you a copy.");
-      return;
-    }
     if (!brand.name.trim()) {
       setErrorMsg("Give your mascot a name.");
       return;
@@ -146,7 +190,6 @@ export default function FreeTrialGenerator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
           url: url || null,
           galleryOptIn,
           ...brand,
@@ -163,11 +206,7 @@ export default function FreeTrialGenerator() {
       }
       if (!res.ok || !body?.id) {
         setStage("edit-brief");
-        setErrorMsg(
-          body?.error === "invalid_email"
-            ? "Enter a valid email."
-            : "Something went wrong. Please try again.",
-        );
+        setErrorMsg("Something went wrong. Please try again.");
         return;
       }
       setGenerationId(body.id);
@@ -176,7 +215,7 @@ export default function FreeTrialGenerator() {
       setStage("edit-brief");
       setErrorMsg("Network error. Try again.");
     }
-  }, [email, brand, url, galleryOptIn]);
+  }, [brand, url, galleryOptIn]);
 
   // Poll for completion.
   useEffect(() => {
@@ -211,8 +250,7 @@ export default function FreeTrialGenerator() {
     setStage("url-input");
     setUrl("");
     setBrand(EMPTY_BRAND);
-    setEmail("");
-    setGalleryOptIn(false);
+    setGalleryOptIn(true);
     setGenerationId(null);
     setShareSlug(null);
     setImageUrl(null);
@@ -222,6 +260,9 @@ export default function FreeTrialGenerator() {
   // ---------- Renders per stage ----------
 
   if (stage === "done" && imageUrl && shareUrl) {
+    // "keep this asset" → push them to signup with the slug in the redirect,
+    // dashboard can hoover it up on landing once the claim endpoint ships.
+    const signupHref = `/auth/signup?claim=${shareSlug}&redirect=/dashboard%3Fclaim=${shareSlug}`;
     return (
       <ChromeWrap>
         <div className="text-center mb-4">
@@ -230,7 +271,7 @@ export default function FreeTrialGenerator() {
           </div>
           <h3 className="text-2xl font-bold mt-3">{brand.name}</h3>
           <p className="text-sm text-muted mt-1">
-            We just emailed you a copy. Share this link:{" "}
+            Share this link:{" "}
             <Link href={shareUrl} className="text-accent underline">
               {typeof window !== "undefined"
                 ? `${window.location.origin}${shareUrl}`
@@ -263,89 +304,139 @@ export default function FreeTrialGenerator() {
             Open share page
           </Link>
         </div>
-        <div className="mt-6 mx-auto max-w-md rounded-xl border border-accent/30 bg-accent-light p-4 text-left">
-          <div className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
-            This is preview quality
-          </div>
-          <p className="text-xs text-muted">
-            Want HD (sharp lines, print-ready)? We&apos;re unlocking that at
-            launch — leave your email above to get notified, or{" "}
-            <button
-              onClick={resetAll}
-              className="underline text-accent hover:text-accent-hover"
-            >
-              start over
-            </button>
-            .
-          </p>
-        </div>
-      </ChromeWrap>
-    );
-  }
 
-  if (stage === "rate-limited-ip") {
-    return (
-      <ChromeWrap>
-        <div className="text-center py-6">
-          <div className="text-5xl mb-3">🎨</div>
-          <h3 className="text-xl font-bold">You already got your free preview today</h3>
-          <p className="text-sm text-muted mt-2 max-w-md mx-auto">
-            The free trial is <strong>1 sheet per visitor per day</strong>.
-            Come back tomorrow for another — or skip the line with a $1 pledge
-            and get $5 of launch credit toward HD & unlimited when they land.
+        <div className="mt-6 mx-auto max-w-lg rounded-xl border border-accent/30 bg-accent-light p-5 text-left">
+          <div className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
+            Sign in to keep this
+          </div>
+          <p className="text-sm text-muted mb-3">
+            Save <strong>{brand.name}</strong> to your library, generate more,
+            and unlock HD when it launches. Free trial is 1 sheet per day —
+            signed-in accounts get more.
           </p>
-          <div className="mt-6 max-w-md mx-auto rounded-xl border border-accent/30 bg-accent-light p-4 text-left">
-            <div className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
-              Skip the line · $5 launch credit
-            </div>
-            <p className="text-xs text-muted mb-3">
-              Pledge $1 now → $5 of credit at launch + priority when HD flips on.
-              Stripe collects your email at checkout.
-            </p>
-            <form action="/api/pledge" method="post">
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
-              >
-                Pledge $1 → Get Early Access
-              </button>
-            </form>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={signupHref}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
+            >
+              Sign up &amp; keep {brand.name}
+            </Link>
+            <Link
+              href={`/auth/login?redirect=/dashboard%3Fclaim=${shareSlug}`}
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+            >
+              I already have an account
+            </Link>
           </div>
           <button
             onClick={resetAll}
-            className="mt-4 text-xs text-muted underline hover:text-foreground"
+            className="mt-3 text-xs text-muted underline hover:text-foreground"
           >
-            or start over
+            or come back tomorrow for another free one
           </button>
         </div>
       </ChromeWrap>
     );
   }
 
+  if (stage === "rate-limited-ip") {
+    const resetsAt = quota?.ipResetsAt ? new Date(quota.ipResetsAt) : null;
+    const eta = resetsAt ? formatEta(resetsAt, new Date(nowTick)) : null;
+    return (
+      <ChromeWrap>
+        <div className="text-center py-6">
+          <div className="text-5xl mb-3">🎨</div>
+          <h3 className="text-xl font-bold">You already got your free trial today</h3>
+          <p className="text-sm text-muted mt-2 max-w-md mx-auto">
+            The free trial is <strong>1 sheet per visitor per day</strong>
+            {eta ? (
+              <>
+                {" — resets in "}
+                <strong className="text-foreground">{eta}</strong>.
+              </>
+            ) : (
+              "."
+            )}
+          </p>
+
+          <div className="mt-6 max-w-md mx-auto rounded-xl border border-accent/30 bg-accent-light p-5 text-left">
+            <div className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
+              Keep your asset · Generate more
+            </div>
+            <p className="text-sm text-muted mb-3">
+              Sign in to save what you just made to your library and pay for
+              more generations — no waiting until tomorrow.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/auth/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
+              >
+                Sign up &amp; generate more
+              </Link>
+              <Link
+                href="/auth/login?redirect=/dashboard"
+                className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+              >
+                Log in
+              </Link>
+            </div>
+          </div>
+
+          <p className="mt-5 text-xs text-muted">
+            …or come back tomorrow for another free trial.
+          </p>
+        </div>
+      </ChromeWrap>
+    );
+  }
+
   if (stage === "rate-limited-global") {
+    const nextAt = quota?.nextSlotAt ? new Date(quota.nextSlotAt) : null;
+    const eta = nextAt ? formatEta(nextAt, new Date(nowTick)) : null;
     return (
       <ChromeWrap>
         <div className="text-center py-6">
           <div className="text-5xl mb-3">⏳</div>
-          <h3 className="text-xl font-bold">Free trial is busy right now</h3>
+          <h3 className="text-xl font-bold">Free trial is at capacity right now</h3>
           <p className="text-sm text-muted mt-2 max-w-md mx-auto">
-            A lot of people are trying it at once. Give it a few minutes and
-            try again — or skip the queue with a $1 pledge and lock in $5 of
-            launch credit.
+            We cap the free trial at 10 sheets per hour so nobody waits forever.
+            {eta ? (
+              <>
+                {" A slot opens in "}
+                <strong className="text-foreground">{eta}</strong>.
+              </>
+            ) : (
+              " Try again in a bit."
+            )}
           </p>
-          <div className="mt-6 max-w-md mx-auto">
-            <form action="/api/pledge" method="post">
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
+
+          <div className="mt-6 max-w-md mx-auto rounded-xl border border-accent/30 bg-accent-light p-5 text-left">
+            <div className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
+              Skip the queue
+            </div>
+            <p className="text-sm text-muted mb-3">
+              Sign in and generate on the paid tier — no hourly cap.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/auth/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-hover"
               >
-                Pledge $1 → Skip the queue
-              </button>
-            </form>
+                Sign up
+              </Link>
+              <Link
+                href="/auth/login?redirect=/dashboard"
+                className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+              >
+                Log in
+              </Link>
+            </div>
           </div>
+
           <button
             onClick={resetAll}
-            className="mt-4 text-xs text-muted underline hover:text-foreground"
+            className="mt-5 text-xs text-muted underline hover:text-foreground"
           >
             or start over
           </button>
@@ -425,12 +516,12 @@ export default function FreeTrialGenerator() {
           <BriefEditor
             brand={brand}
             onChange={setBrand}
-            email={email}
-            onEmailChange={setEmail}
             galleryOptIn={galleryOptIn}
             onGalleryChange={setGalleryOptIn}
             onGenerate={handleGenerate}
             busy={stage === "generating"}
+            quota={quota}
+            now={new Date(nowTick)}
           />
           {stage === "generating" && (
             <div className="mt-6 rounded-xl bg-accent-light border border-accent/10 p-5 text-center">
@@ -439,7 +530,7 @@ export default function FreeTrialGenerator() {
                 Painting {brand.name || "your mascot"}… ~60 seconds
               </div>
               <div className="text-xs text-muted mt-1">
-                We&apos;ll email you a copy the moment it&apos;s done.
+                Stay on this page — we&apos;ll drop it in as soon as it&apos;s done.
               </div>
             </div>
           )}
@@ -467,7 +558,7 @@ export default function FreeTrialGenerator() {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-          HD coming soon
+          HD available on paid plans
         </span>
       </div>
     </ChromeWrap>
@@ -479,28 +570,45 @@ export default function FreeTrialGenerator() {
 interface BriefEditorProps {
   brand: ExtractedBrand;
   onChange: (b: ExtractedBrand) => void;
-  email: string;
-  onEmailChange: (e: string) => void;
   galleryOptIn: boolean;
   onGalleryChange: (v: boolean) => void;
   onGenerate: () => void;
   busy: boolean;
+  quota: Quota | null;
+  now: Date;
 }
 
 function BriefEditor({
   brand,
   onChange,
-  email,
-  onEmailChange,
   galleryOptIn,
   onGalleryChange,
   onGenerate,
   busy,
+  quota,
+  now,
 }: BriefEditorProps) {
   const setField = <K extends keyof ExtractedBrand>(
     key: K,
     value: ExtractedBrand[K],
   ) => onChange({ ...brand, [key]: value });
+
+  const remaining = quota?.remainingHourly ?? null;
+  const outOfSlots = remaining !== null && remaining <= 0;
+  const nextSlotEta =
+    outOfSlots && quota?.nextSlotAt
+      ? formatEta(new Date(quota.nextSlotAt), now)
+      : null;
+
+  const btnLabel = busy
+    ? "Generating…"
+    : outOfSlots
+      ? nextSlotEta
+        ? `Free tier full · next slot in ${nextSlotEta}`
+        : "Free tier full · try again shortly"
+      : remaining !== null
+        ? `✨ Generate my character sheet · ${remaining} of 10 left this hour`
+        : "✨ Generate my character sheet";
 
   return (
     <div className="space-y-4 text-left">
@@ -637,40 +745,38 @@ function BriefEditor({
         </Field>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-        <Field label="Your email (we'll send you a copy)">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => onEmailChange(e.target.value)}
-            disabled={busy}
-            placeholder="you@company.com"
-            required
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
-          />
-        </Field>
-        <label className="flex items-start gap-2 text-xs text-muted cursor-pointer">
-          <input
-            type="checkbox"
-            checked={galleryOptIn}
-            disabled={busy}
-            onChange={(e) => onGalleryChange(e.target.checked)}
-            className="mt-0.5 accent-[color:var(--accent,#6366F1)]"
-          />
-          <span>
-            Show my mascot in the public gallery. Off by default — your sheet
-            stays unlisted unless you check this.
+      <label
+        className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition ${
+          galleryOptIn
+            ? "border-accent/30 bg-accent-light"
+            : "border-border bg-card"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={galleryOptIn}
+          disabled={busy}
+          onChange={(e) => onGalleryChange(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-[color:var(--accent,#6366F1)]"
+        />
+        <span className="text-xs leading-relaxed">
+          <span className="font-semibold text-foreground">
+            Share {brand.name?.trim() || "my mascot"} in the public gallery
           </span>
-        </label>
-      </div>
+          <span className="text-muted">
+            {" — "}on by default for the free trial so the community can see
+            what you made. Uncheck to keep this sheet unlisted.
+          </span>
+        </span>
+      </label>
 
       <button
         type="button"
         onClick={onGenerate}
-        disabled={busy}
+        disabled={busy || outOfSlots}
         className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-hover text-white font-semibold py-3.5 text-sm shadow-md shadow-accent/20 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition"
       >
-        {busy ? "Generating…" : "✨ Generate my character sheet"}
+        {btnLabel}
       </button>
     </div>
   );
