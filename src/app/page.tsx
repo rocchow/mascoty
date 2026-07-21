@@ -66,17 +66,14 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative">
         <div className="max-w-6xl mx-auto px-4 py-20 sm:px-6 sm:py-28 text-center">
-          <div className="inline-block rounded-full bg-accent-light px-3 py-1 text-xs font-semibold text-accent mb-6">
-            Early access — launching soon
-          </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] max-w-3xl mx-auto">
-            Turn any idea into a{" "}
-            <span className="text-accent">complete mascot</span>{" "}
-            character sheet
+            Turn your business name/logo into a{" "}
+            <span className="text-accent">complete mascot</span>
           </h1>
           <p className="mt-5 text-lg text-muted max-w-xl mx-auto">
-            Turnaround views, expressions, poses, color palette, style guide —
-            all generated in 60 seconds by AI. Production-ready.
+            Character sheet with turnaround views, expressions, poses, color
+            palette, style guide — all generated in 60 seconds by AI.
+            Production-ready.
           </p>
 
           {/* Live Demo */}
