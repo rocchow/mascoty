@@ -140,6 +140,10 @@ export default function FreeTrialGenerator() {
         body: JSON.stringify({ url }),
       });
       const body = await res.json();
+      if (res.status === 429 && body?.error === "ip_daily_limit") {
+        setStage("rate-limited-ip");
+        return;
+      }
       if (!res.ok) {
         setStage("url-input");
         setErrorMsg(
@@ -477,14 +481,15 @@ export default function FreeTrialGenerator() {
             disabled={stage !== "url-input"}
             className="flex-1 bg-transparent outline-none text-base placeholder:text-muted/60 min-w-0"
             onKeyDown={(e) => {
-              if (e.key === "Enter" && stage === "url-input") handleImport();
+              if (e.key === "Enter" && stage === "url-input" && !quota?.ipUsedToday) handleImport();
             }}
           />
           {stage === "url-input" && (
             <>
               <button
                 onClick={handleImport}
-                disabled={!url.trim()}
+                disabled={!url.trim() || quota?.ipUsedToday === true}
+                title={quota?.ipUsedToday ? "You already got your free trial today" : undefined}
                 className="rounded-lg bg-accent text-white text-sm font-semibold px-4 py-2 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 Import
