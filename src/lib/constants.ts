@@ -8,6 +8,7 @@ export const CREDITS_PER_GENERATION = 1;
 export const PRICING_TIERS = [
   {
     name: "Free",
+    bestFor: "Try it out",
     price: 0,
     credits: 3,
     period: "one-time",
@@ -21,6 +22,7 @@ export const PRICING_TIERS = [
   },
   {
     name: "Starter",
+    bestFor: "Solo creators",
     price: 19,
     credits: 10,
     period: "month",
@@ -35,6 +37,7 @@ export const PRICING_TIERS = [
   },
   {
     name: "Pro",
+    bestFor: "Studios & agencies",
     price: 49,
     credits: 30,
     period: "month",
@@ -52,6 +55,7 @@ export const PRICING_TIERS = [
   },
   {
     name: "Credit Pack",
+    bestFor: "One-off project",
     price: 5,
     credits: 3,
     period: "one-time",
