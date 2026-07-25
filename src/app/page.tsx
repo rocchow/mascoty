@@ -360,7 +360,7 @@ export default async function LandingPage() {
             </div>
             <div className="flex gap-6 text-xs text-muted">
               <Link href="/pricing" className="hover:text-foreground transition">Pricing</Link>
-              <a href="mailto:roc.chow1988@gmail.com" className="hover:text-foreground transition">Contact</a>
+              <a href="mailto:info@mascoty.ai" className="hover:text-foreground transition">Contact</a>
             </div>
             <div className="text-xs text-muted">
               &copy; 2026 Mascoty. All rights reserved.
