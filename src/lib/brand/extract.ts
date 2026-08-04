@@ -7,6 +7,7 @@ export interface ExtractedBrand {
   role: string;
   personality: string;
   species: string;
+  speciesOptions: string[];
   description: string;
   style: MascotStyle;
   colors: MascotColor[];
@@ -110,14 +111,27 @@ const SYSTEM_PROMPT = `You extract mascot brand briefs from website text. Return
   "name": string,           // brand name — proper noun, or invented mascot name if the brand doesn't have one
   "role": string,           // one short phrase, e.g. "Charging companion for hotel guests"
   "personality": string,    // 2-4 adjectives, e.g. "Friendly, energetic, reliable"
-  "species": string,        // creature/form, e.g. "Panda", "Cloud spirit", "Robot"
-  "description": string,    // 1-2 sentences describing look & vibe
+  "speciesOptions": [string, string, string, string, string], // exactly 5 distinct creature/form ideas, best pick FIRST
+  "description": string,    // 1-2 sentences describing look & vibe (matches speciesOptions[0])
   "style": one of ["3d-pixar","flat-vector","anime","watercolor","pixel-art","clay-3d","sticker","minimalist"],
   "colors": [                // 3-5 brand colors
     { "name": string, "hex": string }  // hex like "#RRGGBB"
   ]
 }
-Pick a species that resonates with the brand (industry, name, imagery). Pick style that matches the brand's tone. If the text is thin, be creative but grounded in whatever signals exist.`;
+
+SPECIES RULES — this is the highest-signal decision in the brief:
+- Return exactly 5 species candidates, from DIFFERENT angles: literal brand-name reference, industry metaphor, personality-driven, culturally/regionally relevant, and unexpected-but-fitting.
+- Each candidate is one short noun phrase (1–4 words). No repeats, no near-duplicates ("Owl" vs "Wise Owl" is a repeat).
+- AVOID lazy clichés unless the brand explicitly evokes them:
+    * Owl → wisdom / knowledge / AI / assistant / learning / productivity
+    * Fox → clever / stealth
+    * Panda → friendly / cute default
+    * Robot → any tech company by default
+    * Lion → strength / leadership
+  Only use one of these when the brand is literally about that thing (e.g. Duolingo really is a language app, so an owl is on-nose — but a nutrition site or kanban tool is NOT an owl). If you catch yourself reaching for one of these, replace it with something more specific to this brand.
+- Put the strongest, most distinctive pick FIRST.
+
+Pick a style that matches the brand's tone. If the text is thin, be creative but grounded in whatever signals exist.`;
 
 function normalizeStyle(raw: unknown): MascotStyle {
   if (typeof raw === "string" && STYLE_VALUES.includes(raw as MascotStyle)) {
@@ -197,14 +211,38 @@ export async function extractBrandFromUrl(url: string): Promise<ExtractedBrand> 
     parsed = {};
   }
 
+  const speciesOptions = normalizeSpeciesOptions(
+    parsed.speciesOptions,
+    parsed.species,
+  );
+
   return {
     name: truncate(parsed.name, 60, title?.split(/[|—-]/)[0].trim() || "Mascot"),
     role: truncate(parsed.role, 120, "Brand companion"),
     personality: truncate(parsed.personality, 120, "Friendly, energetic, approachable"),
-    species: truncate(parsed.species, 60, "Cute creature"),
+    species: speciesOptions[0] ?? truncate(parsed.species, 60, "Cute creature"),
+    speciesOptions,
     description: truncate(parsed.description, 400, "A memorable mascot for the brand."),
     style: normalizeStyle(parsed.style),
     colors: normalizeColors(parsed.colors),
     sourceTitle: title ?? undefined,
   };
+}
+
+function normalizeSpeciesOptions(raw: unknown, fallbackPrimary: unknown): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const push = (v: unknown) => {
+    if (typeof v !== "string") return;
+    const trimmed = v.trim().slice(0, 60);
+    if (!trimmed) return;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(trimmed);
+  };
+  if (Array.isArray(raw)) raw.forEach(push);
+  // If the model regressed to the old shape, at least keep its top pick.
+  push(fallbackPrimary);
+  return out.slice(0, 5);
 }
