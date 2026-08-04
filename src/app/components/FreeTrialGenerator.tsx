@@ -20,6 +20,7 @@ interface ExtractedBrand {
   role: string;
   personality: string;
   species: string;
+  speciesOptions: string[];
   description: string;
   style: MascotStyle;
   colors: MascotColor[];
@@ -37,6 +38,7 @@ const EMPTY_BRAND: ExtractedBrand = {
   role: "",
   personality: "",
   species: "",
+  speciesOptions: [],
   description: "",
   style: "3d-pixar",
   colors: [
@@ -158,6 +160,11 @@ export default function FreeTrialGenerator() {
         role: body.brand.role || "",
         personality: body.brand.personality || "",
         species: body.brand.species || "",
+        speciesOptions: Array.isArray(body.brand.speciesOptions)
+          ? body.brand.speciesOptions.filter(
+              (v: unknown): v is string => typeof v === "string" && v.trim().length > 0,
+            )
+          : [],
         description: body.brand.description || "",
         style: body.brand.style || "3d-pixar",
         colors: Array.isArray(body.brand.colors) && body.brand.colors.length > 0
@@ -648,6 +655,11 @@ function BriefEditor({
             placeholder="e.g. Panda, Cloud spirit, Robot"
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
           />
+          <SpeciesAlternatives
+            options={brand.speciesOptions}
+            selected={brand.species}
+            disabled={busy}
+          />
         </Field>
         <Field label="Role">
           <input
@@ -810,6 +822,84 @@ function Field({
         {label}
       </div>
       {children}
+    </div>
+  );
+}
+
+// Show the alternative species candidates that came back with the brief.
+// The primary (currently applied) pick is hidden — the point is to tease
+// the OTHER options as locked previews that push visitors toward signup.
+function SpeciesAlternatives({
+  options,
+  selected,
+  disabled,
+}: {
+  options: string[];
+  selected: string;
+  disabled: boolean;
+}) {
+  const others = options.filter(
+    (o) => o.trim().toLowerCase() !== selected.trim().toLowerCase(),
+  );
+  if (others.length === 0) return null;
+
+  return (
+    <div className="mt-2 rounded-lg border border-dashed border-border bg-card/50 px-2.5 py-2">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-muted flex items-center gap-1">
+          <svg
+            className="w-3 h-3"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <rect x="4" y="11" width="16" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 018 0v4" />
+          </svg>
+          {others.length} more species suggested
+        </div>
+        <Link
+          href="/auth/signup?redirect=/dashboard/create"
+          className="text-[10px] font-semibold text-accent hover:text-accent-hover whitespace-nowrap"
+        >
+          Sign up to try →
+        </Link>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {others.map((opt) => (
+          <Link
+            key={opt}
+            href="/auth/signup?redirect=/dashboard/create"
+            aria-disabled={disabled}
+            onClick={(e) => {
+              if (disabled) e.preventDefault();
+            }}
+            className="group relative select-none rounded-md border border-border bg-background px-2 py-1 text-xs text-muted hover:border-accent hover:text-accent transition cursor-pointer"
+            title="Sign up free to try this alternative"
+          >
+            <span
+              className="blur-[3px] group-hover:blur-[2px] transition"
+              aria-hidden
+            >
+              {opt}
+            </span>
+            <span className="sr-only">{opt} (sign up to unlock)</span>
+            <span className="absolute inset-0 flex items-center justify-center opacity-90 group-hover:opacity-100">
+              <svg
+                className="w-3 h-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <rect x="4" y="11" width="16" height="10" rx="2" />
+                <path d="M8 11V7a4 4 0 018 0v4" />
+              </svg>
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
